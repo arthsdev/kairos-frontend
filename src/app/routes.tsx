@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import { LoginPage } from '../pages/LoginPage'
 import  DashboardPage from '../pages/DashboardPage'
 import  AdminPage  from '../pages/AdminPage'
-import  RegisterPage  from '../pages/RegisterPage'
+import  { RegisterPage }  from '../pages/RegisterPage'
 import  HomePage  from '../pages/HomePage'
 import { ProtectedRoute } from './ProtectedRoute'
 
