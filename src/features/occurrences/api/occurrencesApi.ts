@@ -1,6 +1,11 @@
 import { api } from '../../../shared/lib/axios'
 import type { Occurrence, PaginatedResponse } from '../types'
 
+export interface UpdateOccurrencePayload {
+    title?: string
+    description?: string
+}
+
 export const occurrencesApi = {
     /**
      * Fetches the logged-in user's occurrences (USER) -> GET /occurrences/me
@@ -16,5 +21,42 @@ export const occurrencesApi = {
     getAllOccurrences: async (): Promise<Occurrence[]> => {
         const response = await api.get<PaginatedResponse<Occurrence>>('/occurrences')
         return response.data.data
+    },
+
+    /**
+     * Updates an occurrence (USER/ADMIN) -> PATCH /occurrences/:id
+     */
+    updateOccurrence: async ({
+        id,
+        payload,
+    }: {
+        id: string
+        payload: UpdateOccurrencePayload
+    }): Promise<Occurrence> => {
+        const response = await api.patch<Occurrence>(`/occurrences/${id}`, payload)
+        return response.data
+    },
+
+    /**
+     * Verifies an occurrence (ADMIN) -> POST /occurrences/:id/verify
+     */
+    verifyOccurrence: async (id: string): Promise<Occurrence> => {
+        const response = await api.post<Occurrence>(`/occurrences/${id}/verify`)
+        return response.data
+    },
+
+    /**
+     * Resolves an occurrence (ADMIN) -> POST /occurrences/:id/resolve
+     */
+    resolveOccurrence: async (id: string): Promise<Occurrence> => {
+        const response = await api.post<Occurrence>(`/occurrences/${id}/resolve`)
+        return response.data
+    },
+
+    /**
+     * Soft-deletes an occurrence -> DELETE /occurrences/:id
+     */
+    deleteOccurrence: async (id: string): Promise<void> => {
+        await api.delete(`/occurrences/${id}`)
     },
 }
