@@ -19,7 +19,7 @@ export interface Occurrence {
     longitude: number
     address?: string
     userId: string
-    userName?: string
+    reporterDisplayId?: string
     createdAt: string
     updatedAt: string
     actions?: OccurrenceActions

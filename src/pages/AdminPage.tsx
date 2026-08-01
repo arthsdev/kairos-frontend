@@ -113,7 +113,7 @@ export default function AdminPage() {
                   <p className="text-sm text-slate-400 mb-3 line-clamp-2">{occ.description}</p>
 
                   <p className="text-xs text-slate-500 mb-4">
-                    Reported by: <span className="text-slate-300">{occ.userName || occ.userId}</span>
+                    Reported by: <span className="text-slate-300">{occ.reporterDisplayId ?? occ.userId}</span>
                   </p>
                 </div>
 
