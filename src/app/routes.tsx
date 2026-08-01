@@ -1,10 +1,12 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import { LoginPage } from '../pages/LoginPage'
-import  DashboardPage from '../pages/DashboardPage'
-import  AdminPage  from '../pages/AdminPage'
-import  { RegisterPage }  from '../pages/RegisterPage'
-import  HomePage  from '../pages/HomePage'
+import DashboardPage from '../pages/DashboardPage'
+import AdminPage from '../pages/AdminPage'
+import { RegisterPage } from '../pages/RegisterPage'
+import HomePage from '../pages/HomePage'
 import { ProtectedRoute } from './ProtectedRoute'
+import { DashboardLayout } from './layouts/DashboardLayout'
+import { AdminLayout } from './layouts/AdminLayout'
 
 export const router = createBrowserRouter([
   {
@@ -19,21 +21,33 @@ export const router = createBrowserRouter([
     path: '/register',
     element: <RegisterPage />,
   },
+  // USER FLOW
   {
-    path: '/dashboard',
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <DashboardLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        path: '/dashboard',
+        element: <DashboardPage />,
+      },
+    ],
   },
+  // ADMIN FLOW
   {
-    path: '/admin',
     element: (
       <ProtectedRoute requiredRole="ADMIN">
-        <AdminPage />
+        <AdminLayout />
       </ProtectedRoute>
     ),
+    children: [
+      {
+        path: '/admin',
+        element: <AdminPage />,
+      },
+    ],
   },
   {
     path: '*',

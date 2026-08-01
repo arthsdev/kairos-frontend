@@ -1,10 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { occurrencesApi } from '../features/occurrences/api/occurrencesApi'
-import { useAuth } from '../features/auth/hooks/useAuth'
 
 export default function AdminPage() {
-  const { userName, logout } = useAuth()
-
   const {
     data: occurrences,
     isPending,
@@ -40,34 +37,15 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Top Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">Admin Panel</h1>
-              <p className="text-sm text-slate-400">
-                Operator: <span className="text-sky-400 font-medium">{userName ?? 'Administrator'}</span>
-              </p>
-            </div>
-            <span className="text-xs font-semibold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              Admin Mode
-            </span>
-          </div>
-          <button
-            onClick={logout}
-            className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors"
-          >
-            Logout
-          </button>
-        </div>
+    <div className="flex flex-col">
+      <header className="h-16 border-b border-slate-800 bg-slate-900/30 px-8 flex items-center justify-between shrink-0">
+        <h1 className="text-lg font-semibold text-white">Admin Panel</h1>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="p-8 max-w-6xl w-full mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-200">All System Occurrences</h2>
+          <h2 className="text-base font-medium text-slate-300">All System Occurrences</h2>
         </div>
 
         {/* 1. Loading State */}
@@ -126,7 +104,6 @@ export default function AdminPage() {
                     <span className="text-slate-400">{occ.category}</span>
                   </div>
 
-                  {/* Moderator / Admin Action Controls */}
                   {occ.actions && (
                     <div className="flex gap-3">
                       {occ.actions.canVerify && (
