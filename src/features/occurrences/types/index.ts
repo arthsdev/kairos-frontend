@@ -34,3 +34,8 @@ export interface PaginatedResponse<T> {
     hasNext: boolean
     hasPrevious: boolean
 }
+
+export interface UpdateOccurrenceInput {
+    title: string
+    description: string
+}

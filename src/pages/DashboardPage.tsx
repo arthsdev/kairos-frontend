@@ -1,121 +1,62 @@
-import { useQuery } from '@tanstack/react-query'
-import { occurrencesApi } from '../features/occurrences/api/occurrencesApi'
+import { useState } from 'react'
+import { OccurrenceCard } from '../features/occurrences/components/OccurrenceCard'
+import { EditOccurrenceModal } from '../features/occurrences/components/EditOccurrenceModal'
+import { useModerationMutations } from '../features/occurrences/hooks/useModerationMutations'
+import { useMyOccurrences } from '../features/occurrences/hooks/useMyOccurrences'
+import type { Occurrence, UpdateOccurrenceInput } from '../features/occurrences/types'
 
-export default function DashboardPage() {
-  const {
-    data: occurrences,
-    isPending,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ['my-occurrences'],
-    queryFn: occurrencesApi.getMyOccurrences,
-  })
+export function DashboardPage() {
+  const { occurrences, isPending, isError } = useMyOccurrences()
+  const { updateOccAsync, deleteOcc, isDeleting, isUpdating } = useModerationMutations()
+  const [editingOccurrence, setEditingOccurrence] = useState<Occurrence | null>(null)
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'RESOLVED':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-      case 'VERIFIED':
-        return 'bg-sky-500/10 text-sky-400 border-sky-500/20'
-      default:
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+  const handleUpdate = async (id: string, data: UpdateOccurrenceInput) => {
+    await updateOccAsync({ id, payload: data })
+  }
+
+  const handleDelete = (id: string, title: string) => {
+    if (confirm(`Are you sure you want to delete "${title}"?`)) {
+      deleteOcc(id)
     }
   }
 
-  const getSeverityBadge = (severity: string) => {
-    switch (severity) {
-      case 'CRITICAL':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-      case 'HIGH':
-        return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-      case 'MEDIUM':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-      default:
-        return 'bg-slate-500/10 text-slate-300 border-slate-500/20'
-    }
+  if (isPending) {
+    return <div className="p-8 text-slate-400">Loading your occurrences...</div>
+  }
+
+  if (isError) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
+          Failed to load your occurrences. Please try again later.
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col">
-      <header className="h-16 border-b border-slate-800 bg-slate-900/30 px-8 flex items-center justify-between shrink-0">
-        <h1 className="text-lg font-semibold text-white">My Dashboard</h1>
-      </header>
+    <div className="p-8 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-white mb-6">My Occurrences</h1>
 
-      {/* Main Content */}
-      <main className="p-8 max-w-6xl w-full mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-base font-medium text-slate-300">My Reported Occurrences</h2>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {occurrences?.map((occ) => (
+          <OccurrenceCard
+            key={occ.id}
+            occurrence={occ}
+            onEdit={setEditingOccurrence}
+            onDelete={handleDelete}
+            isDeleting={isDeleting}
+          />
+        ))}
+      </div>
 
-        {/* 1. Loading State */}
-        {isPending && (
-          <div className="flex justify-center items-center py-12">
-            <p className="text-slate-400 animate-pulse">Loading occurrences...</p>
-          </div>
-        )}
-
-        {/* 2. Error State */}
-        {isError && (
-          <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
-            <p className="font-semibold">Failed to load occurrences</p>
-            <p className="text-xs text-rose-300/80 mt-1">
-              {error instanceof Error ? error.message : 'Unknown error'}
-            </p>
-          </div>
-        )}
-
-        {/* 3. Empty State */}
-        {occurrences && occurrences.length === 0 && (
-          <div className="text-center py-12 bg-slate-900/30 border border-slate-800/80 rounded-xl">
-            <p className="text-slate-400">You have not reported any occurrences yet.</p>
-          </div>
-        )}
-
-        {/* 4. Data State */}
-        {occurrences && occurrences.length > 0 && (
-          <div className="grid gap-4 md:grid-cols-2">
-            {occurrences.map((occ) => (
-              <div
-                key={occ.id}
-                className="p-5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <h3 className="font-semibold text-white text-base leading-snug">{occ.title}</h3>
-                    <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${getStatusBadge(occ.status)}`}>
-                      {occ.status}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-slate-400 mb-4 line-clamp-2">{occ.description}</p>
-                </div>
-
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded border font-medium ${getSeverityBadge(occ.severity)}`}>
-                      {occ.severity}
-                    </span>
-                    <span className="text-slate-500">•</span>
-                    <span>{occ.category}</span>
-                  </div>
-
-                  {occ.actions && (
-                    <div className="flex gap-2">
-                      {occ.actions.canEdit && (
-                        <button className="text-sky-400 hover:underline">Edit</button>
-                      )}
-                      {occ.actions.canDelete && (
-                        <button className="text-rose-400 hover:underline">Delete</button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+      <EditOccurrenceModal
+        isOpen={Boolean(editingOccurrence)}
+        occurrence={editingOccurrence}
+        onClose={() => setEditingOccurrence(null)}
+        onSubmit={handleUpdate}
+        isSubmitting={isUpdating}
+      />
     </div>
   )
 }

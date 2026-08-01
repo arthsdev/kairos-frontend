@@ -35,7 +35,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+    const isAuthEndpoint =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/register') ||
+      originalRequest?.url?.includes('/auth/refresh')
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((newToken: string) => {
@@ -62,7 +67,6 @@ api.interceptors.response.use(
         const { accessToken, refreshToken: newRefreshToken } = response.data
 
         setTokens(accessToken, newRefreshToken)
-
         onRefreshed(accessToken)
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`
