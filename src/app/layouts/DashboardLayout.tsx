@@ -2,20 +2,10 @@ import { Outlet } from 'react-router'
 import { Sidebar, type SidebarItem } from '../../shared/components/Sidebar'
 
 const userMenuItems: SidebarItem[] = [
-    {
-        label: 'My Occurrences',
-        path: '/dashboard',
-    },
-    {
-        label: 'Map View',
-        path: '/dashboard/map',
-        disabled: true,
-    },
-    {
-        label: 'Profile Settings',
-        path: '/dashboard/profile',
-        disabled: true,
-    },
+    { label: 'My Occurrences', path: '/dashboard' },
+    { label: 'Monitored Cities', path: '/dashboard/cities' },
+    { label: 'Map View', path: '/map', disabled: true },
+    { label: 'Profile Settings', path: '/profile', disabled: true },
 ]
 
 export function DashboardLayout() {

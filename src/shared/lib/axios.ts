@@ -6,15 +6,28 @@ import {
   clearTokens,
 } from '../../features/auth/lib/tokenStorage'
 
+// Sanitize baseURL to prevent double slash issues (e.g. //auth/refresh)
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string || '').replace(/\/$/, '')
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: BASE_URL,
 })
 
+/**
+ * Request Interceptor:
+ * Ensures requests targeting `/auth/` routes NEVER attach the Authorization header.
+ * Prevents stale/invalid tokens in localStorage from blocking login or refresh attempts.
+ */
 api.interceptors.request.use((config) => {
-  const token = getAccessToken()
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const isAuthEndpoint = config.url?.includes('/auth/')
+
+  if (!isAuthEndpoint) {
+    const token = getAccessToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
+
   return config
 })
 
@@ -30,6 +43,10 @@ function onRefreshed(newToken: string) {
   refreshSubscribers = []
 }
 
+/**
+ * Catches 401 status on protected routes, queues concurrent requests,
+ * and seamlessly refreshes the access token.
+ */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -40,7 +57,12 @@ api.interceptors.response.use(
       originalRequest?.url?.includes('/auth/register') ||
       originalRequest?.url?.includes('/auth/refresh')
 
-    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isAuthEndpoint
+    ) {
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((newToken: string) => {
@@ -60,7 +82,8 @@ api.interceptors.response.use(
           throw new Error('No refresh token available')
         }
 
-        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
+        // Clean post request using bare axios instance (avoids attaching expired Authorization header)
+        const response = await axios.post(`${BASE_URL}/auth/refresh`, {
           refreshToken,
         })
 
@@ -69,6 +92,7 @@ api.interceptors.response.use(
         setTokens(accessToken, newRefreshToken)
         onRefreshed(accessToken)
 
+        // Update failed request header with new access token and retry
         originalRequest.headers.Authorization = `Bearer ${accessToken}`
         return api(originalRequest)
       } catch (refreshError) {
