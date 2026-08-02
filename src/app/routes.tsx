@@ -7,6 +7,7 @@ import HomePage from '../pages/HomePage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { DashboardLayout } from './layouts/DashboardLayout'
 import { AdminLayout } from './layouts/AdminLayout'
+import { MonitoredCitiesPage } from '../pages/MonitoredCitiesPage'
 
 export const router = createBrowserRouter([
   {
@@ -21,7 +22,7 @@ export const router = createBrowserRouter([
     path: '/register',
     element: <RegisterPage />,
   },
-  // USER FLOW
+  // USER FLOW (Protected Routes for Authenticated Users)
   {
     element: (
       <ProtectedRoute>
@@ -32,6 +33,10 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: <DashboardPage />,
+      },
+      {
+        path: '/dashboard/cities',
+        element: <MonitoredCitiesPage />,
       },
     ],
   },
