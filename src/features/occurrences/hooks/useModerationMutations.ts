@@ -6,8 +6,7 @@ export function useModerationMutations() {
     const queryClient = useQueryClient()
 
     const invalidateOccurrences = () => {
-        queryClient.invalidateQueries({ queryKey: ['all-occurrences'] })
-        queryClient.invalidateQueries({ queryKey: ['my-occurrences'] })
+        queryClient.invalidateQueries({ queryKey: ['occurrences'] })
     }
 
     const updateMutation = useMutation({
