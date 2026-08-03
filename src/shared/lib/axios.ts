@@ -1,4 +1,5 @@
 import axios from 'axios'
+import type { InternalAxiosRequestConfig } from 'axios'
 import {
   getAccessToken,
   getRefreshToken,
@@ -15,16 +16,19 @@ export const api = axios.create({
 
 /**
  * Request Interceptor:
- * Ensures requests targeting `/auth/` routes NEVER attach the Authorization header.
- * Prevents stale/invalid tokens in localStorage from blocking login or refresh attempts.
+ * Ensures public auth endpoints NEVER attach the Authorization header.
+ * Prevents stale/invalid tokens in localStorage from blocking login, register or refresh attempts.
  */
-api.interceptors.request.use((config) => {
-  const isAuthEndpoint = config.url?.includes('/auth/')
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const isPublicAuthEndpoint =
+    config.url?.endsWith('/auth/login') ||
+    config.url?.endsWith('/auth/register') ||
+    config.url?.endsWith('/auth/refresh')
 
-  if (!isAuthEndpoint) {
+  if (!isPublicAuthEndpoint) {
     const token = getAccessToken()
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+      config.headers.set('Authorization', `Bearer ${token}`)
     }
   }
 
@@ -50,23 +54,23 @@ function onRefreshed(newToken: string) {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
-    const isAuthEndpoint =
-      originalRequest?.url?.includes('/auth/login') ||
-      originalRequest?.url?.includes('/auth/register') ||
-      originalRequest?.url?.includes('/auth/refresh')
+    const isPublicAuthEndpoint =
+      originalRequest?.url?.endsWith('/auth/login') ||
+      originalRequest?.url?.endsWith('/auth/register') ||
+      originalRequest?.url?.endsWith('/auth/refresh')
 
     if (
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !isAuthEndpoint
+      !isPublicAuthEndpoint
     ) {
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((newToken: string) => {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`
+            originalRequest.headers.set('Authorization', `Bearer ${newToken}`)
             resolve(api(originalRequest))
           })
         })
@@ -92,8 +96,8 @@ api.interceptors.response.use(
         setTokens(accessToken, newRefreshToken)
         onRefreshed(accessToken)
 
-        // Update failed request header with new access token and retry
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`
+        // Update failed request header with new access token using AxiosHeaders setter
+        originalRequest.headers.set('Authorization', `Bearer ${accessToken}`)
         return api(originalRequest)
       } catch (refreshError) {
         refreshSubscribers = []

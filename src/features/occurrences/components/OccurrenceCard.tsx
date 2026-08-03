@@ -57,8 +57,8 @@ export function OccurrenceCard({
         <div className="p-5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between">
             <div>
                 <div className="flex items-start justify-between gap-3 mb-2">
-                    <h3 className="font-semibold text-white text-base leading-snug">{occ.title}</h3>
-                    <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${getStatusBadge(occ.status)}`}>
+                    <h3 className="font-semibold text-white text-base leading-snug flex-1 min-w-0 break-words">{occ.title}</h3>
+                    <span className={`shrink-0 text-xs px-2.5 py-1 rounded-full border font-medium ${getStatusBadge(occ.status)}`}>
                         {occ.status}
                     </span>
                 </div>

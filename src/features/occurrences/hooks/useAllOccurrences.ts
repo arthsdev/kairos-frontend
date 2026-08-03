@@ -3,7 +3,7 @@ import { occurrencesApi } from '../api/occurrencesApi'
 
 export function useAllOccurrences() {
     const { data: occurrences, isPending, isError, error } = useQuery({
-        queryKey: ['all-occurrences'],
+        queryKey: ['occurrences', 'all'],
         queryFn: () => occurrencesApi.getAllOccurrences(),
     })
 

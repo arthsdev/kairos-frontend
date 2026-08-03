@@ -1,5 +1,5 @@
 import { api } from '../../../shared/lib/axios'
-import type { Occurrence, PaginatedResponse } from '../types'
+import type { CreateOccurrenceRequest, Occurrence, PaginatedResponse } from '../types'
 
 export interface UpdateOccurrencePayload {
     title?: string
@@ -7,6 +7,14 @@ export interface UpdateOccurrencePayload {
 }
 
 export const occurrencesApi = {
+    /**
+     * Creates a new occurrence -> POST /occurrences
+     */
+    createOccurrence: async (payload: CreateOccurrenceRequest): Promise<Occurrence> => {
+        const response = await api.post<Occurrence>('/occurrences', payload)
+        return response.data
+    },
+
     /**
      * Fetches the logged-in user's occurrences (USER) -> GET /occurrences/me
      */

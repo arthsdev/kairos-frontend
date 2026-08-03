@@ -1,7 +1,8 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
+import axios from 'axios'
 import { api } from '../../../shared/lib/axios'
-import { getAccessToken, setTokens, clearTokens } from '../lib/tokenStorage'
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../lib/tokenStorage'
 import { isTokenExpired } from '../lib/tokenUtils'
 
 interface DecodedToken {
@@ -41,11 +42,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    const token = getAccessToken()
-    if (token && !isTokenExpired(token)) {
-      applySession(token)
+    async function initializeSession() {
+      const token = getAccessToken()
+
+      if (!token) {
+        setIsLoading(false)
+        return
+      }
+
+      if (!isTokenExpired(token)) {
+        applySession(token)
+        setIsLoading(false)
+        return
+      }
+
+      // Token exists but is expired — try to silently refresh before giving up
+      try {
+        const refreshToken = getRefreshToken()
+        if (!refreshToken) throw new Error('No refresh token available')
+
+        const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/refresh`, {
+          refreshToken,
+        })
+
+        const { accessToken, refreshToken: newRefreshToken } = response.data
+        setTokens(accessToken, newRefreshToken)
+        applySession(accessToken)
+      } catch {
+        clearTokens()
+      } finally {
+        setIsLoading(false)
+      }
     }
-    setIsLoading(false)
+
+    initializeSession()
   }, [])
 
   async function login(username: string, password: string): Promise<string> {
