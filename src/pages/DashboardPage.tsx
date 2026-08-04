@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { OccurrenceCard } from '../features/occurrences/components/OccurrenceCard'
 import { EditOccurrenceModal } from '../features/occurrences/components/EditOccurrenceModal'
 import { CreateOccurrenceModal } from '../features/occurrences/components/CreateOccurrenceModal'
 import { useModerationMutations } from '../features/occurrences/hooks/useModerationMutations'
 import { useMyOccurrences } from '../features/occurrences/hooks/useMyOccurrences'
+import { usePlanStatus } from '../features/plans/hooks/usePlanStatus'
 import type { Occurrence, UpdateOccurrenceInput } from '../features/occurrences/types'
 
 export function DashboardPage() {
@@ -12,6 +14,21 @@ export function DashboardPage() {
 
   const [editingOccurrence, setEditingOccurrence] = useState<Occurrence | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  // Stripe Upgrade Search Params & Polling Logic
+  const [searchParams, setSearchParams] = useSearchParams()
+  const upgradeStatus = searchParams.get('upgrade') // 'success' | 'cancelled' | null
+
+  const isUpgrading = upgradeStatus === 'success'
+  const { data: planStatus, isTimedOut, isFetching } = usePlanStatus({ shouldPoll: isUpgrading })
+
+  const isConfirmedPremium = planStatus?.planType === 'PREMIUM'
+  const showTimeout = isUpgrading && !isConfirmedPremium && isTimedOut && !isFetching
+
+  const clearUpgradeParam = () => {
+    searchParams.delete('upgrade')
+    setSearchParams(searchParams)
+  }
 
   const handleUpdate = async (id: string, data: UpdateOccurrenceInput) => {
     await updateOccAsync({ id, payload: data })
@@ -39,6 +56,73 @@ export function DashboardPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
+      {/* Cancellation Banner */}
+      {upgradeStatus === 'cancelled' && (
+        <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-amber-300 text-sm flex items-center justify-between">
+          <span>Checkout process was cancelled. No charges were made.</span>
+          <button
+            type="button"
+            onClick={clearUpgradeParam}
+            className="text-slate-400 hover:text-white transition-colors"
+            aria-label="Close notification"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Upgrade Status Banners */}
+      {isUpgrading && (
+        <div className="transition-all">
+          {/* Confirmed Success */}
+          {isConfirmedPremium && (
+            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl text-emerald-400">
+              <span className="text-sm font-medium">
+                Premium subscription activated successfully.
+              </span>
+              <button
+                type="button"
+                onClick={clearUpgradeParam}
+                className="text-slate-400 hover:text-white transition-colors"
+                aria-label="Close notification"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Waiting for Webhook (Processing) */}
+          {!isConfirmedPremium && !showTimeout && (
+            <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl text-blue-400">
+              <div className="flex items-center gap-3">
+                <span className="h-4 w-4 rounded-full border-2 border-blue-400 border-t-transparent animate-spin" />
+                <span className="text-sm">
+                  Confirming your payment status. Please wait a moment...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Timeout Banner */}
+          {showTimeout && (
+            <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl text-amber-300">
+              <span className="text-sm">
+                Payment confirmation is taking longer than expected. Your Premium access will be updated automatically once processed.
+              </span>
+              <button
+                type="button"
+                onClick={clearUpgradeParam}
+                className="text-slate-400 hover:text-white transition-colors"
+                aria-label="Close notification"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">My Occurrences</h1>
@@ -56,6 +140,7 @@ export function DashboardPage() {
         </button>
       </div>
 
+      {/* Occurrences List */}
       {occurrences && occurrences.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {occurrences.map((occ: Occurrence) => (
@@ -81,6 +166,7 @@ export function DashboardPage() {
         </div>
       )}
 
+      {/* Modals */}
       <CreateOccurrenceModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
