@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { PlanBadge } from '../../features/plans/components/PlanBadge'
 
 export interface SidebarItem {
     label: string
@@ -12,9 +13,10 @@ export interface SidebarItem {
 interface SidebarProps {
     items: SidebarItem[]
     title?: string
+    footerContent?: ReactNode
 }
 
-export function Sidebar({ items, title = 'Kairos' }: SidebarProps) {
+export function Sidebar({ items, title = 'Kairos', footerContent }: SidebarProps) {
     const location = useLocation()
     const { userName, role, logout } = useAuth()
 
@@ -56,8 +58,8 @@ export function Sidebar({ items, title = 'Kairos' }: SidebarProps) {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                                    ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                                        ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                                     }`}
                             >
                                 {item.icon && <span>{item.icon}</span>}
@@ -68,18 +70,27 @@ export function Sidebar({ items, title = 'Kairos' }: SidebarProps) {
                 </nav>
             </div>
 
-            {/* Bottom Section: User Info & Logout */}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/50">
-                <div className="mb-3 px-2">
-                    <p className="text-xs text-slate-500">Logged in as</p>
-                    <p className="text-sm font-medium text-slate-200 truncate">{userName ?? 'User'}</p>
+            {/* Bottom Section: Upgrade Card, User Info, Plan Badge & Logout */}
+            <div className="p-4 border-t border-slate-800 bg-slate-900/50 space-y-4">
+                {footerContent && <div>{footerContent}</div>}
+
+                <div>
+                    <div className="mb-3 px-2">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                            <p className="text-xs text-slate-500">Logged in as</p>
+                            {/* Plan badge placed right next to "Logged in as" */}
+                            {role !== 'ADMIN' && <PlanBadge />}
+                        </div>
+                        <p className="text-sm font-medium text-slate-200 truncate">{userName ?? 'User'}</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={logout}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-500/10 rounded-lg border border-slate-700 hover:border-rose-500/20 transition-colors"
+                    >
+                        Logout
+                    </button>
                 </div>
-                <button
-                    onClick={logout}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-slate-400 hover:text-rose-400 bg-slate-800 hover:bg-rose-500/10 rounded-lg border border-slate-700 hover:border-rose-500/20 transition-colors"
-                >
-                    Logout
-                </button>
             </div>
         </aside>
     )
