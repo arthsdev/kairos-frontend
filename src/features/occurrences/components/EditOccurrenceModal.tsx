@@ -32,7 +32,6 @@ export function EditOccurrenceModal({
         }
     }, [occurrence])
 
-    // Listener to close upon pressing 'Esc'
     useEffect(() => {
         if (!isOpen || isSubmitting) return
 
@@ -74,53 +73,70 @@ export function EditOccurrenceModal({
 
     return (
         <div
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 cursor-pointer"
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-hidden cursor-pointer"
             onClick={handleBackdropClick}
         >
             <div
-                className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-xl cursor-default"
+                className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg flex flex-col max-h-[85dvh] shadow-2xl overflow-hidden cursor-default"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-xl font-bold text-white mb-4">Edit Occurrence</h2>
+                {/* Fixed Header */}
+                <div className="flex items-center justify-between border-b border-slate-800 p-4 sm:p-6 shrink-0">
+                    <h2 className="text-xl font-bold text-white">Edit Occurrence</h2>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                        className="text-slate-400 hover:text-white transition-colors disabled:opacity-50 p-1"
+                    >
+                        ✕
+                    </button>
+                </div>
 
-                {error && (
-                    <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">
-                            Title <span className="text-slate-500">(min {MIN_TITLE_LENGTH} chars)</span>
-                        </label>
-                        <input
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            minLength={MIN_TITLE_LENGTH}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500"
-                            required
-                        />
-                        {isTitleTooShort && (
-                            <p className="text-xs text-rose-400 mt-1">
-                                Title must be at least {MIN_TITLE_LENGTH} characters (current: {title.length}).
-                            </p>
+                {/* Form Layout */}
+                <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
+                    {/* Scrollable Content Body */}
+                    <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
+                        {/* Error Banner */}
+                        {error && (
+                            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
+                                {error}
+                            </div>
                         )}
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                                Title <span className="text-slate-500">(min {MIN_TITLE_LENGTH} chars)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                minLength={MIN_TITLE_LENGTH}
+                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 text-sm"
+                                required
+                            />
+                            {isTitleTooShort && (
+                                <p className="text-xs text-rose-400 mt-1">
+                                    Title must be at least {MIN_TITLE_LENGTH} characters (current: {title.length}).
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows={4}
+                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 text-sm resize-none"
+                                required
+                            />
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows={4}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500 resize-none"
-                            required
-                        />
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-2">
+                    {/* Fixed Actions Footer */}
+                    <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-slate-800 bg-slate-900 shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
