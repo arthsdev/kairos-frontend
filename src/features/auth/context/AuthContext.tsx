@@ -1,11 +1,13 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import axios from 'axios'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../shared/lib/axios'
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../lib/tokenStorage'
 import { isTokenExpired } from '../lib/tokenUtils'
 
 interface DecodedToken {
+  sub?: string
   realm_access?: {
     roles?: string[]
   }
@@ -17,6 +19,7 @@ export interface AuthContextType {
   isLoading: boolean
   role: string | null
   userName: string | null
+  userId: string | null
   login: (username: string, password: string) => Promise<string>
   logout: () => void
 }
@@ -24,10 +27,13 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient()
+
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [role, setRole] = useState<string | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
 
   function applySession(token: string): string {
     const decoded = jwtDecode<DecodedToken>(token)
@@ -37,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(true)
     setRole(userRole)
     setUserName(decoded.given_name ?? null)
+    setUserId(decoded.sub ?? null)
 
     return userRole
   }
@@ -79,8 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(username: string, password: string): Promise<string> {
-    const response = await api.post('/auth/login', { username, password })
+    // Clear any leftover cache from a previous session
+    queryClient.clear()
 
+    const response = await api.post('/auth/login', { username, password })
     const { accessToken, refreshToken } = response.data
 
     setTokens(accessToken, refreshToken)
@@ -93,10 +102,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false)
     setRole(null)
     setUserName(null)
+    setUserId(null)
+
+    // Clear all query cache on logout to prevent stale data for the next user
+    queryClient.clear()
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, role, userName, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, role, userName, userId, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
