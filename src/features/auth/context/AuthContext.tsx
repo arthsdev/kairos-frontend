@@ -5,24 +5,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../shared/lib/axios'
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../lib/tokenStorage'
 import { isTokenExpired } from '../lib/tokenUtils'
-
-interface DecodedToken {
-  sub?: string
-  realm_access?: {
-    roles?: string[]
-  }
-  given_name?: string
-}
-
-export interface AuthContextType {
-  isAuthenticated: boolean
-  isLoading: boolean
-  role: string | null
-  userName: string | null
-  userId: string | null
-  login: (username: string, password: string) => Promise<string>
-  logout: () => void
-}
+import type { DecodedToken, AuthContextType, UserRole } from '../../../types/auth'
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -31,14 +14,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [role, setRole] = useState<string | null>(null)
+  const [role, setRole] = useState<UserRole | null>(null)
   const [userName, setUserName] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
 
-  function applySession(token: string): string {
+  function applySession(token: string): UserRole {
     const decoded = jwtDecode<DecodedToken>(token)
     const roles = decoded.realm_access?.roles || []
-    const userRole = roles.includes('ROLE_ADMIN') ? 'ADMIN' : 'USER'
+    const userRole: UserRole = roles.includes('ROLE_ADMIN') ? 'ADMIN' : 'USER'
 
     setIsAuthenticated(true)
     setRole(userRole)
@@ -63,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // Token exists but is expired — try to silently refresh before giving up
       try {
         const refreshToken = getRefreshToken()
         if (!refreshToken) throw new Error('No refresh token available')
@@ -86,7 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function login(username: string, password: string): Promise<string> {
-    // Clear any leftover cache from a previous session
     queryClient.clear()
 
     const response = await api.post('/auth/login', { username, password })
@@ -104,7 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserName(null)
     setUserId(null)
 
-    // Clear all query cache on logout to prevent stale data for the next user
     queryClient.clear()
   }
 
