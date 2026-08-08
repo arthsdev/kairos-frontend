@@ -38,7 +38,16 @@ export function AdminPage() {
   // Reuses the already-loaded list in memory — no extra API call needed
   const handleSelectOnMap = (id: string) => {
     const found = occurrences?.find((occ) => occ.id === id)
-    if (found) setEditingOccurrence(found)
+    if (found?.actions?.canEdit) {
+      setEditingOccurrence(found)
+    }
+  }
+
+  // Looks up canEdit from the already-loaded list, since MapOccurrenceDTO
+  // doesn't carry OccurrenceActions (lightweight payload by design)
+  const canEditLookup = (id: string) => {
+    const found = occurrences?.find((occ) => occ.id === id)
+    return found?.actions?.canEdit ?? false
   }
 
   if (isPending) {
@@ -88,7 +97,7 @@ export function AdminPage() {
 
       {viewMode === 'map' ? (
         <div className="h-[calc(100vh-14rem)]">
-          <OccurrenceMap onSelectOccurrence={handleSelectOnMap} />
+          <OccurrenceMap onSelectOccurrence={handleSelectOnMap} canEditLookup={canEditLookup} />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
