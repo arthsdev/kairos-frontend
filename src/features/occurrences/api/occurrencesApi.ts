@@ -27,7 +27,9 @@ export const occurrencesApi = {
      * Fetches all occurrences in the system (ADMIN) -> GET /occurrences
      */
     getAllOccurrences: async (): Promise<Occurrence[]> => {
-        const response = await api.get<PaginatedResponse<Occurrence>>('/occurrences')
+        const response = await api.get<PaginatedResponse<Occurrence>>('/occurrences', {
+            params: { size: 100 }
+        })
         return response.data.data
     },
 
