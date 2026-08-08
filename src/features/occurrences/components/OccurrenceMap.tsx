@@ -16,6 +16,7 @@ export interface OccurrenceMapFilters {
 interface OccurrenceMapProps {
     filters?: OccurrenceMapFilters
     onSelectOccurrence?: (id: string) => void
+    canEditLookup?: (id: string) => boolean
     defaultCenter?: [number, number]
     defaultZoom?: number
 }
@@ -46,6 +47,7 @@ function FitBoundsToMarkers({ occurrences }: { occurrences: MapOccurrenceDTO[] }
 export function OccurrenceMap({
     filters,
     onSelectOccurrence,
+    canEditLookup,
     defaultCenter = [-23.5505, -46.6333], // Default coordinates (São Paulo) — used only before bounds are calculated
     defaultZoom = 5,
 }: OccurrenceMapProps) {
@@ -113,6 +115,7 @@ export function OccurrenceMap({
                         key={occurrence.id}
                         occurrence={occurrence}
                         onSelect={onSelectOccurrence}
+                        canEdit={canEditLookup ? canEditLookup(occurrence.id) : true}
                     />
                 ))}
             </MapContainer>

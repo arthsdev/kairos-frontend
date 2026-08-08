@@ -66,8 +66,10 @@ export interface PaginatedResponse<T> {
 }
 
 export interface UpdateOccurrenceInput {
-    title: string
-    description: string
+    title?: string
+    description?: string
+    latitude?: number
+    longitude?: number
 }
 
 export interface MapOccurrenceDTO {
