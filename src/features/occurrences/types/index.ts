@@ -69,3 +69,12 @@ export interface UpdateOccurrenceInput {
     title: string
     description: string
 }
+
+export interface MapOccurrenceDTO {
+    id: string
+    latitude: number
+    longitude: number
+    category: OccurrenceCategory
+    severity: SeverityLevel
+    status: OccurrenceStatus
+}

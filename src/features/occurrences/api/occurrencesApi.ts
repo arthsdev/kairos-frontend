@@ -1,5 +1,5 @@
 import { api } from '../../../shared/lib/axios'
-import type { CreateOccurrenceRequest, Occurrence, PaginatedResponse } from '../types'
+import type { CreateOccurrenceRequest, MapOccurrenceDTO, Occurrence, PaginatedResponse } from '../types'
 
 export interface UpdateOccurrencePayload {
     title?: string
@@ -27,7 +27,9 @@ export const occurrencesApi = {
      * Fetches all occurrences in the system (ADMIN) -> GET /occurrences
      */
     getAllOccurrences: async (): Promise<Occurrence[]> => {
-        const response = await api.get<PaginatedResponse<Occurrence>>('/occurrences')
+        const response = await api.get<PaginatedResponse<Occurrence>>('/occurrences', {
+            params: { size: 100 }
+        })
         return response.data.data
     },
 
@@ -66,5 +68,13 @@ export const occurrencesApi = {
      */
     deleteOccurrence: async (id: string): Promise<void> => {
         await api.delete(`/occurrences/${id}`)
+    },
+
+    /**
+     * Fetches lightweight occurrences for map view -> GET /occurrences/map
+     */
+    getMapOccurrences: async (): Promise<MapOccurrenceDTO[]> => {
+        const response = await api.get<MapOccurrenceDTO[]>('/occurrences/map')
+        return response.data
     },
 }
