@@ -6,12 +6,21 @@ import { EditOccurrenceModal } from '../features/occurrences/components/EditOccu
 import { OccurrenceMap } from '../features/occurrences/components/OccurrenceMap'
 import { useModerationMutations } from '../features/occurrences/hooks/useModerationMutations'
 import { useAllOccurrences } from '../features/occurrences/hooks/useAllOccurrences'
-import type { Occurrence, UpdateOccurrenceInput } from '../features/occurrences/types'
+import type { Occurrence, OccurrenceStatus, UpdateOccurrenceInput } from '../features/occurrences/types'
 
 type ViewMode = 'list' | 'map'
 
+const STATUS_OPTIONS: { label: string; value: OccurrenceStatus | '' }[] = [
+  { label: 'Last 100', value: '' },
+  { label: 'Pending', value: 'PENDING' },
+  { label: 'Verified', value: 'VERIFIED' },
+  { label: 'Resolved', value: 'RESOLVED' },
+]
+
 export function AdminPage() {
-  const { occurrences, isPending, isError } = useAllOccurrences()
+  const [statusFilter, setStatusFilter] = useState<OccurrenceStatus | ''>('')
+  const { occurrences, isPending, isError } = useAllOccurrences(statusFilter)
+
   const {
     updateOccAsync,
     deleteOcc,
@@ -61,38 +70,61 @@ export function AdminPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-white">Admin Moderation Dashboard</h1>
 
-        <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl">
-          <button
-            type="button"
-            onClick={() => setViewMode('list')}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${viewMode === 'list'
-              ? 'bg-slate-800 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
-              }`}
-          >
-            <LayoutList className="w-4 h-4" />
-            List
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('map')}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${viewMode === 'map'
-              ? 'bg-slate-800 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
-              }`}
-          >
-            <MapIcon className="w-4 h-4" />
-            Map
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Status Filter Toggle */}
+          <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setStatusFilter(opt.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${statusFilter === opt.value
+                  ? 'bg-slate-800 text-white shadow-sm font-semibold'
+                  : 'text-slate-400 hover:text-slate-200'
+                  }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center bg-slate-900 border border-slate-800 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${viewMode === 'list'
+                ? 'bg-slate-800 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              <LayoutList className="w-4 h-4" />
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${viewMode === 'map'
+                ? 'bg-slate-800 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+                }`}
+            >
+              <MapIcon className="w-4 h-4" />
+              Map
+            </button>
+          </div>
         </div>
       </div>
 
       {viewMode === 'map' ? (
         <div className="h-[calc(100vh-14rem)]">
-          <OccurrenceMap onSelectOccurrence={handleSelectOnMap} />
+          <OccurrenceMap
+            onSelectOccurrence={handleSelectOnMap}
+            filters={statusFilter ? { status: statusFilter } : undefined}
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

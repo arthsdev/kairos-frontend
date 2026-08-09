@@ -30,6 +30,12 @@ function FitBoundsToMarkers({ occurrences }: { occurrences: MapOccurrenceDTO[] }
     useEffect(() => {
         if (occurrences.length === 0) return
 
+        if (occurrences.length === 1) {
+            const [occ] = occurrences
+            map.flyTo([occ.latitude, occ.longitude], 12, { duration: 0.8 })
+            return
+        }
+
         const bounds = L.latLngBounds(
             occurrences.map((occ) => [occ.latitude, occ.longitude] as [number, number])
         )
@@ -47,7 +53,6 @@ function FitBoundsToMarkers({ occurrences }: { occurrences: MapOccurrenceDTO[] }
 export function OccurrenceMap({
     filters,
     onSelectOccurrence,
-    canEditLookup,
     defaultCenter = [-23.5505, -46.6333], // Default coordinates (São Paulo) — used only before bounds are calculated
     defaultZoom = 5,
 }: OccurrenceMapProps) {
@@ -115,7 +120,6 @@ export function OccurrenceMap({
                         key={occurrence.id}
                         occurrence={occurrence}
                         onSelect={onSelectOccurrence}
-                        canEdit={canEditLookup ? canEditLookup(occurrence.id) : true}
                     />
                 ))}
             </MapContainer>
