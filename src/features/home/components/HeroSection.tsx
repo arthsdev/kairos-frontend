@@ -23,7 +23,7 @@ export function HeroSection() {
 
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
                     <Link
-                        to="/register"
+                        to="/login"
                         className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-bold bg-sky-500 hover:bg-sky-400 text-slate-950 transition-all duration-200 text-sm flex items-center justify-center gap-2 shadow-xl shadow-sky-500/25 hover:shadow-sky-500/40 hover:-translate-y-0.5 active:translate-y-0"
                     >
                         Access Dashboard <ArrowRight className="w-4 h-4" />
