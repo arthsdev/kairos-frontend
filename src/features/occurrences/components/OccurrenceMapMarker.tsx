@@ -8,10 +8,9 @@ import { createCustomMarkerHtml } from '../utils/occurrenceMarkerStyle'
 interface OccurrenceMapMarkerProps {
     occurrence: MapOccurrenceDTO
     onSelect?: (id: string) => void
-    canEdit?: boolean
 }
 
-export function OccurrenceMapMarker({ occurrence, onSelect, canEdit = true }: OccurrenceMapMarkerProps) {
+export function OccurrenceMapMarker({ occurrence, onSelect }: OccurrenceMapMarkerProps) {
     const customIcon = useMemo(() => {
         return L.divIcon({
             html: createCustomMarkerHtml(
@@ -43,7 +42,7 @@ export function OccurrenceMapMarker({ occurrence, onSelect, canEdit = true }: Oc
                         Gravidade: <span className="font-bold">{occurrence.severity}</span>
                     </p>
 
-                    {onSelect && canEdit && (
+                    {onSelect && (
                         <div className="pt-1 border-t border-slate-100 flex justify-end">
                             <button
                                 type="button"

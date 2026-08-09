@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { LayoutList, Map as MapIcon } from 'lucide-react'
 import { OccurrenceCard } from '../features/occurrences/components/OccurrenceCard'
+import { OccurrenceDetailModal } from '../features/occurrences/components/OccurrenceDetailModal'
 import { EditOccurrenceModal } from '../features/occurrences/components/EditOccurrenceModal'
 import { OccurrenceMap } from '../features/occurrences/components/OccurrenceMap'
 import { useModerationMutations } from '../features/occurrences/hooks/useModerationMutations'
@@ -23,6 +24,7 @@ export function AdminPage() {
   } = useModerationMutations()
 
   const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewingOccurrence, setViewingOccurrence] = useState<Occurrence | null>(null)
   const [editingOccurrence, setEditingOccurrence] = useState<Occurrence | null>(null)
 
   const handleUpdate = async (id: string, data: UpdateOccurrenceInput) => {
@@ -35,19 +37,12 @@ export function AdminPage() {
     }
   }
 
-  // Reuses the already-loaded list in memory — no extra API call needed
+  // Reuses the already-loaded list in memory — always opens the detail modal
   const handleSelectOnMap = (id: string) => {
     const found = occurrences?.find((occ) => occ.id === id)
-    if (found?.actions?.canEdit) {
-      setEditingOccurrence(found)
+    if (found) {
+      setViewingOccurrence(found)
     }
-  }
-
-  // Looks up canEdit from the already-loaded list, since MapOccurrenceDTO
-  // doesn't carry OccurrenceActions (lightweight payload by design)
-  const canEditLookup = (id: string) => {
-    const found = occurrences?.find((occ) => occ.id === id)
-    return found?.actions?.canEdit ?? false
   }
 
   if (isPending) {
@@ -97,7 +92,7 @@ export function AdminPage() {
 
       {viewMode === 'map' ? (
         <div className="h-[calc(100vh-14rem)]">
-          <OccurrenceMap onSelectOccurrence={handleSelectOnMap} canEditLookup={canEditLookup} />
+          <OccurrenceMap onSelectOccurrence={handleSelectOnMap} />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -116,6 +111,16 @@ export function AdminPage() {
           ))}
         </div>
       )}
+
+      <OccurrenceDetailModal
+        isOpen={Boolean(viewingOccurrence)}
+        occurrence={viewingOccurrence}
+        onClose={() => setViewingOccurrence(null)}
+        onEdit={(occ) => {
+          setViewingOccurrence(null)
+          setEditingOccurrence(occ)
+        }}
+      />
 
       <EditOccurrenceModal
         isOpen={Boolean(editingOccurrence)}

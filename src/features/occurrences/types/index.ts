@@ -25,6 +25,7 @@ export interface Occurrence {
     status: OccurrenceStatus
     latitude: number
     longitude: number
+    imageUrl?: string | null
     address?: string
     userId: string
     reporterDisplayId?: string
