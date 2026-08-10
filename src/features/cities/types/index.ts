@@ -1,3 +1,5 @@
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+
 export interface CitySearchResult {
     name: string
     latitude: number
@@ -26,4 +28,17 @@ export interface MonitoredCity {
     longitude: number
     country: string
     active: boolean
+}
+
+export interface ClimateDataSummary {
+    temperature: number
+    humidity: number
+    rainVolume: number
+    windSpeed: number
+    riskLevel: RiskLevel
+    collectedAt: string
+}
+
+export interface MonitoredCityWithClimate extends MonitoredCity {
+    climate: ClimateDataSummary | null
 }
