@@ -4,11 +4,17 @@ import type {
     AddCityPayload,
     GeocodingResponse,
     MonitoredCity,
+    MonitoredCityWithClimate,
 } from '../types'
 
 export const citiesApi = {
     getMonitoredCities: async (): Promise<MonitoredCity[]> => {
         const response = await api.get<MonitoredCity[]>('/monitored-cities')
+        return response.data
+    },
+
+    getMonitoredCitiesWithClimate: async (): Promise<MonitoredCityWithClimate[]> => {
+        const response = await api.get<MonitoredCityWithClimate[]>('/monitored-cities/climate')
         return response.data
     },
 
