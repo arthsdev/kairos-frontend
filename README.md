@@ -65,7 +65,7 @@ Cada feature é autocontida: componentes, hooks, chamadas de API e tipos especí
 
 ### Mapa de ocorrências (admin)
 
-![Mapa de ocorrências no Admin Dashboard](./src/docs/Map%20Ocurrences.png)
+![Mapa de ocorrências no Admin Dashboard](./docs/Map%20Ocurrences.png)
 
 Toggle entre visão em **Lista** e **Mapa**, ambos filtráveis por status (Pending / Verified / Resolved), com o mesmo estado de filtro alimentando as duas visões simultaneamente.
 
@@ -73,11 +73,11 @@ Toggle entre visão em **Lista** e **Mapa**, ambos filtráveis por status (Pendi
 - `fitBounds` enquadra automaticamente todos os pontos visíveis na tela, mesmo quando estão geograficamente distantes entre si — evita o problema de centralizar o mapa numa média de coordenadas sem sentido (por exemplo, calcular o "meio do caminho" entre uma ocorrência no Brasil e outra nos EUA resultaria num ponto órfão no meio do oceano).
 - Clicar em um ponto abre um modal de detalhe somente leitura, com foto (quando disponível); a partir dele, se a ocorrência ainda permitir edição, é possível abrir o formulário de edição.
 
-![Lista de ocorrências filtrada por status](./src/docs/Map%20Detail.png)
+![Lista de ocorrências filtrada por status](./docs/Map%20Detail.png)
 
 ### Criação de ocorrência com seleção de localização no mapa
 
-![Modal de criação com location picker](./src/docs/New%20Occurrence.png)
+![Modal de criação com location picker](./docs/New%20Occurrence.png)
 
 Ao criar uma ocorrência, a localização não é digitada manualmente — o usuário escolhe a cidade monitorada (o mapa já nasce centralizado nela) e então arrasta um marcador (ou clica em qualquer ponto do mapa) para marcar o local exato do incidente. Os campos de latitude/longitude continuam visíveis, mas em modo somente leitura, refletindo a posição do marcador em tempo real.
 
@@ -85,7 +85,7 @@ O mesmo componente (`LocationPickerMap`) é reutilizado, sem nenhuma alteração
 
 ### Cidades monitoradas com dados climáticos
 
-![Cards de cidades monitoradas com clima](./src/docs/Monitored%20Cities.png)
+![Cards de cidades monitoradas com clima](./docs/Monitored%20Cities.png)
 
 Cada cidade monitorada exibe temperatura atual, volume de chuva, velocidade do vento e um selo de nível de risco calculado pelo backend — não apenas nome e coordenadas. Cidades recém-adicionadas, que ainda não tiveram um primeiro ciclo de coleta de dados, mostram um estado de "coletando dados" em vez de um erro ou campo vazio.
 
